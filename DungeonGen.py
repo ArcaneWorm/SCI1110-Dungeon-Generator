@@ -21,10 +21,10 @@ class DungeonGen:
         return grid, grid_surface
     
 
-    def gen_room(Surface, list=[]): #generates a room in a random quadrant of the screen
-
+    def gen_room(quadrant, Surface, list=[]): #generates a room in a random quadrant of the screen
+        
         #there's going to be 12 quadrants in the screen, 4 (horizontally) by 3 (vertically)
-        quadrant = random.randint(1,12) #picks a random quadrant to generate a room in
+        #quadrant = random.randint(1,12) #picks a random quadrant to generate a room in
 
         #the height of the screen is 38 grids, so subtracting one space from top and bottom: 36 grids.
         #36 grids / 3 quadrants = 12 grids for each quadrant
@@ -67,7 +67,6 @@ class DungeonGen:
             top = 20*(random.randint(25, 30)) #moves down
             color = "teal"
 
-
         elif (quadrant == 7): #MIDDLE RIGHT TOP
             left = 20*(random.randint(29, 35)) #max width of quad 4 was 29 (21+8), so it starts there and adds 6
             top = 20*(random.randint(1, 6)) 
@@ -86,7 +85,7 @@ class DungeonGen:
         elif (quadrant == 10): #RIGHTMOST TOP
             left = 20*(random.randint(43, 49)) #max width of quad 7 was 43 (35+8), so it starts there and adds 6
             top = 20*(random.randint(1, 6)) 
-            color = "plum" 
+            color = "darkred" 
 
         elif (quadrant == 11): #RIGHTMOST MIDDLE
             left = 20*(random.randint(43, 49)) #stays in rightmost
@@ -101,20 +100,65 @@ class DungeonGen:
         dimensions = left, top, width, height
         rect = pygame.Rect(dimensions)
 
-        room = pygame.draw.rect(Surface, color, pygame.Rect(dimensions), 2) #draws the actual rectangle, 
+        room = pygame.draw.rect(Surface, color, rect, 2) #draws the actual rectangle, 
         list.append(room) #adds to list of rectangles/rooms generated
         return list 
 
 
-    def is_intersecting(Rect, list=[]): #returns true if rectangles are intersecting
+    #def is_intersecting(Rect, list=[]): 
          #if there's no intersections in the list, it returns an empty list (which is considered false)
-         if (pygame.Rect.collidelistall(Rect,list)):
-             return False
-         else:
-             return True
-             
+         #if (pygame.Rect.collidelistall(Rect,list)):
             
-    #def connect_rooms(list=[]):
+         # TO DO (zhdzwolf): possible with intersecting rectangles, combine into one rather than separating them
+         # use pygame.Rect.union_ip to combine them into one, pygame.clipline would remove the lines/walls inside one another
+         # with pygame.clipline, we would have to take the coordinates of the current overlapping lines to remove them
+         # possibly use pygame.Rect.contains to test overlapping?
+             
+    
+    def connect_vertical(x, Surface, list=[]):
+        width = 20
+        disconnected = True
+        counter = 0
+        while(disconnected and counter != 10):
+            if (x != 2 and x != 5 and x!= 8 and x != 11):
+                rect1 = pygame.Rect.copy(list[x+1])
+                rect0 = pygame.Rect.copy(list[x])
+                left = (rect0.left+rect0.width)
+                top = (rect0.top+rect0.height)
+                height = abs(rect1.top-(rect0.top+rect0.height))
+                num = 20*(random.randint(1, 6))
+                rect = pygame.Rect(left-num, top-10, width, height+20)
+                #would then check if this rectangle intersects the one below it
+                #if not, then it discards this and tries connecting it to the room horizontally next to it
+                if (rect.colliderect(rect1)):
+                    hall = pygame.draw.rect(Surface, "black", rect, 2)
+                    disconnected = False
+                    counter += 1
+                    #print(rect) 
+            
+    def connect_horizontal(x, Surface, list=[]):
+        height = 20
+        if (x!=9 and x!=10 and x!=11):
+            rect1 = pygame.Rect.copy(list[x+3])
+            rect0 = pygame.Rect.copy(list[x])
+            left = (rect0.left+rect0.width)
+            top = (rect0.top+rect0.height)
+            width = abs(rect1.left-(rect0.left+rect0.width))
+            num = 20*(random.randint(1, 6))
+            rect = pygame.Rect(left-10, top-num, width+20, height)
+            if (rect.colliderect(rect1)):
+                hall = pygame.draw.rect(Surface, "black", rect, 2)
+                print(rect)
+    
+
+
+
+
+
+        
+
+
+
          
 
 
@@ -132,8 +176,12 @@ def main():
     Surface.fill("white")
     Surface.blit(grid_surface, (0,0))
 
-    for x in range(10): #generate however many number of rooms (for testing, just manually change it for now)
-        rectangles = DungeonGen.gen_room(Surface, rectangles)
+    for x in range(12): #generate however many number of rooms (for testing, just manually change it for now)
+        rectangles = DungeonGen.gen_room(x+1, Surface, rectangles)
+        
+    for x in range(11):
+        DungeonGen.connect_vertical(x, Surface, rectangles)
+        DungeonGen.connect_horizontal(x, Surface, rectangles)
     pygame.display.flip()
 
     while running:
@@ -143,7 +191,7 @@ def main():
             
             clock.tick(60)
 
-    #print(rectangles) #just for our own reference
+    print(rectangles) #just for our own reference
     
 
 if __name__ == '__main__':
