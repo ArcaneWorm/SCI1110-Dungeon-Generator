@@ -100,7 +100,7 @@ class DungeonGen:
         dimensions = left, top, width, height
         rect = pygame.Rect(dimensions)
 
-        room = pygame.draw.rect(Surface, color, rect, 2) #draws the actual rectangle, 
+        room = pygame.draw.rect(Surface, "black", rect, 2) #draws the actual rectangle, 
         list.append(room) #adds to list of rectangles/rooms generated
         return list 
 
@@ -119,36 +119,49 @@ class DungeonGen:
         width = 20
         disconnected = True
         counter = 0
-        while(disconnected and counter != 10):
-            if (x != 2 and x != 5 and x!= 8 and x != 11):
-                rect1 = pygame.Rect.copy(list[x+1])
-                rect0 = pygame.Rect.copy(list[x])
-                left = (rect0.left+rect0.width)
-                top = (rect0.top+rect0.height)
-                height = abs(rect1.top-(rect0.top+rect0.height))
-                num = 20*(random.randint(1, 6))
-                rect = pygame.Rect(left-num, top-10, width, height+20)
+        verticals = []
+        if (x != 2 and x != 5 and x!= 8 and x != 11):
+            rect1 = pygame.Rect.copy(list[x+1])
+            rect0 = pygame.Rect.copy(list[x])
+            left = (rect0.left+rect0.width)
+            top = (rect0.top+rect0.height)
+            height = abs(rect1.top-(rect0.top+rect0.height))
+            while(disconnected and counter < 8):
+                num = 20*(random.randint(0, 8))
+                rect = pygame.Rect(left-num, top-20, width, height+40)
                 #would then check if this rectangle intersects the one below it
-                #if not, then it discards this and tries connecting it to the room horizontally next to it
-                if (rect.colliderect(rect1)):
+                if (rect.colliderect(rect1) and rect.colliderect(rect0)):
                     hall = pygame.draw.rect(Surface, "black", rect, 2)
                     disconnected = False
+                    verticals.append(rect)
+                else:
                     counter += 1
-                    #print(rect) 
+        return verticals
+                
+                 
             
     def connect_horizontal(x, Surface, list=[]):
         height = 20
+        disconnected = True
+        counter = 0
+        horizontals = []
         if (x!=9 and x!=10 and x!=11):
             rect1 = pygame.Rect.copy(list[x+3])
             rect0 = pygame.Rect.copy(list[x])
             left = (rect0.left+rect0.width)
             top = (rect0.top+rect0.height)
             width = abs(rect1.left-(rect0.left+rect0.width))
-            num = 20*(random.randint(1, 6))
-            rect = pygame.Rect(left-10, top-num, width+20, height)
-            if (rect.colliderect(rect1)):
-                hall = pygame.draw.rect(Surface, "black", rect, 2)
-                print(rect)
+            while(disconnected and counter < 8):
+                num = 20*(random.randint(0, 8))
+                rect = pygame.Rect(left-20, top-num, width+40, height)
+                if (rect.colliderect(rect1) and rect.colliderect(rect0)):
+                    hall = pygame.draw.rect(Surface, "black", rect, 2)
+                    disconnected = False
+                    horizontals.append(rect)
+                else:
+                    counter += 1
+        return horizontals
+                    
     
 
 
@@ -157,9 +170,6 @@ class DungeonGen:
 
         
 
-
-
-         
 
 
 
@@ -180,8 +190,8 @@ def main():
         rectangles = DungeonGen.gen_room(x+1, Surface, rectangles)
         
     for x in range(11):
-        DungeonGen.connect_vertical(x, Surface, rectangles)
-        DungeonGen.connect_horizontal(x, Surface, rectangles)
+        verticals = DungeonGen.connect_vertical(x, Surface, rectangles)
+        horizontals = DungeonGen.connect_horizontal(x, Surface, rectangles)
     pygame.display.flip()
 
     while running:
