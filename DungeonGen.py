@@ -178,6 +178,7 @@ class DungeonGen:
 def main(): 
     pygame.init()
     Surface = pygame.display.set_mode((TILESIZE * GRID_W, TILESIZE * GRID_H)) #sets the actual screen
+    pygame.display.set_caption("Dungeon Generated")
     clock = pygame.time.Clock()
     grid, grid_surface = DungeonGen.create_grid()
     running = True
