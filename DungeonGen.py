@@ -99,20 +99,11 @@ class DungeonGen:
 
         dimensions = left, top, width, height
         rect = pygame.Rect(dimensions)
+        room = pygame.draw.rect(Surface, "black", rect, 2) #draws the actual rectangle
 
-        room = pygame.draw.rect(Surface, "black", rect, 2) #draws the actual rectangle, 
-        list.append(room) #adds to list of rectangles/rooms generated
+        list.append(rect) #adds to list of rectangles/rooms generated
         return list 
 
-
-    #def is_intersecting(Rect, list=[]): 
-         #if there's no intersections in the list, it returns an empty list (which is considered false)
-         #if (pygame.Rect.collidelistall(Rect,list)):
-            
-         # TO DO (zhdzwolf): possible with intersecting rectangles, combine into one rather than separating them
-         # use pygame.Rect.union_ip to combine them into one, pygame.clipline would remove the lines/walls inside one another
-         # with pygame.clipline, we would have to take the coordinates of the current overlapping lines to remove them
-         # possibly use pygame.Rect.contains to test overlapping?
              
     
     def connect_vertical(x, Surface, list=[]):
@@ -126,14 +117,18 @@ class DungeonGen:
             left = (rect0.left+rect0.width)
             top = (rect0.top+rect0.height)
             height = abs(rect1.top-(rect0.top+rect0.height))
-            while(disconnected and counter < 8):
+            while(disconnected and counter < 20):
                 num = 20*(random.randint(0, 8))
                 rect = pygame.Rect(left-num, top-20, width, height+40)
-                #would then check if this rectangle intersects the one below it
+                #would then check if this extended rectangle intersects the one below it
                 if (rect.colliderect(rect1) and rect.colliderect(rect0)):
-                    hall = pygame.draw.rect(Surface, "black", rect, 2)
+                    hall_rect = pygame.Rect(left-num, top, width, height+2)
+                    hall = pygame.draw.rect(Surface, "black", hall_rect, 2)
+                    #hallway borders/doors
+                    hall_border_t = pygame.draw.line(Surface, pygame.Color("darkgray"), (left-num, top-1), (left-num+width, top-1), 5)
+                    hall_border_b = pygame.draw.line(Surface, pygame.Color("darkgray"), (left-num, top+height+1), (left-num+width, top+height+1), 5)
                     disconnected = False
-                    verticals.append(rect)
+                    verticals.append(hall)
                 else:
                     counter += 1
         return verticals
@@ -151,11 +146,15 @@ class DungeonGen:
             left = (rect0.left+rect0.width)
             top = (rect0.top+rect0.height)
             width = abs(rect1.left-(rect0.left+rect0.width))
-            while(disconnected and counter < 8):
+            while(disconnected and counter < 20):
                 num = 20*(random.randint(0, 8))
                 rect = pygame.Rect(left-20, top-num, width+40, height)
                 if (rect.colliderect(rect1) and rect.colliderect(rect0)):
-                    hall = pygame.draw.rect(Surface, "black", rect, 2)
+                    hall_rect = pygame.Rect(left, top-num, width+2, height)
+                    hall = pygame.draw.rect(Surface, "black", hall_rect, 2)
+                    #hallway borders/doors
+                    hall_border_l = pygame.draw.line(Surface, pygame.Color("darkgray"), (left-1, top-num), (left-1, top-num+height), 5)
+                    hall_border_r = pygame.draw.line(Surface, pygame.Color("darkgray"), (left+width, top-num), (left+width, top-num+height), 5)
                     disconnected = False
                     horizontals.append(rect)
                 else:
